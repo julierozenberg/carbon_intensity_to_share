@@ -1,0 +1,9 @@
+variable,min,max
+budget,550,1300
+induslife,10,50
+tertlife,20,100
+transplife,5,30
+GDPgrate,0,0.04
+poprate,0.0047,0.0114
+eleclife,20,60
+kintrate,-0.005,0.02
