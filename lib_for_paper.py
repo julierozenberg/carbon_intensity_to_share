@@ -47,6 +47,7 @@ def create_elec_comit_table(elec_comit,subeleclife,myyears):
 def calc_all_comit(IC_growth,GDPgrate,eleclife,myyears,elec_comit_table,co2_industry,co2_tertiary,co2_transport,induslife,tertlife,transplife,ini_year,co2_ener,carb_int_ref,gdp_pc_ref,poprate,pop_ref):
 	
 	if ini_year>2013:
+	#for the scenarios where mitigation does not start now we assume that emissions keep growing with a constant co2 intensity of GDP
 		bau_years=[i for i in myyears if i<=ini_year]
 		new_years=[i for i in myyears if i>=ini_year]
 		co2_proj=calc_bau_emissions(GDPgrate,IC_growth,carb_int_ref,bau_years,gdp_pc_ref,poprate,pop_ref)
@@ -69,6 +70,7 @@ def calc_all_comit(IC_growth,GDPgrate,eleclife,myyears,elec_comit_table,co2_indu
 
 def calc_new_intens(budget,GDPgrate,IC_growth,carb_int_ref,gdp_pc_ref,poprate,pop_ref,eleclife,myyears,elec_comit,co2_industry,co2_tertiary,co2_transport,induslife,tertlife,transplife,ini_year,co2_ener,kintrate,kintref):
 	if ini_year>2013:
+		#for the scenarios where mitigation does not start now we assume that emissions keep growing with a constant co2 intensity of GDP
 		bau_years=[i for i in myyears if i<=ini_year]
 		new_years=[i for i in myyears if i>=ini_year]
 		co2_proj=calc_bau_emissions(GDPgrate,IC_growth,carb_int_ref,bau_years,gdp_pc_ref,poprate,pop_ref)
@@ -76,28 +78,28 @@ def calc_new_intens(budget,GDPgrate,IC_growth,carb_int_ref,gdp_pc_ref,poprate,po
 		pop_ref=pop_ref*(1+poprate)**(ini_year-2013)
 		gdp_pc_ref=gdp_pc_ref*(1+GDPgrate)**(ini_year-2013)
 		gdp_pc_ref=gdp_pc_ref*(1+GDPgrate)**(ini_year-2013)
-		# kintref=kintref*(1+kintrate)**(ini_year-2013)
 	else:
 		new_years=myyears
 		already_emitted=0
+	#we remove emissions after 2013 from the budget
 	new_budget=budget-10**(-9)*already_emitted
 	
+	#all committed emissions
 	total_comit=10**(-9)*calc_all_comit(IC_growth,GDPgrate,eleclife,myyears,elec_comit,co2_industry,co2_tertiary,co2_transport,induslife,tertlife,transplife,ini_year,co2_ener,carb_int_ref,gdp_pc_ref,poprate,pop_ref)
-	
+	#remaining budget when committed emissions are removed
 	remain_e=new_budget-sum(total_comit)
+	#GDP by 2050
 	gdp_tot=calc_proj(poprate,pop_ref,new_years)*calc_proj(GDPgrate,gdp_pc_ref,new_years)
-	
-	# k_over_g=calc_proj(kintrate,kintref,new_years)
-	# ktot = gdp_tot*k_over_g
-	
+	#GDP that is linked to committed emissions (we assume it depreciates like committed emissions so it is directly proportional)
 	gdp_comit=np.array([gdp_tot[0]]*len(gdp_tot))*(total_comit/np.array(len(total_comit)*[total_comit[0]]))
+	#GDP linked to production with new capital
 	gdp_new=gdp_tot-gdp_comit
-	# k_new=gdp_new*k_over_g
 	
-	#in gco2/usd
+	#carbon intensity of new production in gco2/usd
 	carb_intens_new_G=10**15*remain_e/sum(gdp_new)
+	#average carbon intensity
 	carb_intens=10**15*budget/sum(gdp_tot)
-	# k_over_g_av=np.mean(k_over_g)
+	
 	return carb_intens_new_G,carb_intens,remain_e,total_comit
 	
 def create_scenarios(ranges,numCases):
